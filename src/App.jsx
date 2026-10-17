@@ -253,7 +253,7 @@ function App() {
         <a className="brand" href="#home" aria-label="Pip's Dream OS home"><span className="brand-mark">p</span><span>Pip’s Dream OS</span></a>
         <span className="menu-divider" />
         <button className="menu-link" onClick={() => openWindow('story')}>About Pip</button>
-        <button className="menu-link" onClick={closeWindow}>Desktop</button>
+        <a className="menu-link desktop-link" href="#dream-desktop">Desktop</a>
         <div className="menu-actions">
           <span className="status-pill"><span className="status-dot" /> Nursery is dreaming</span>
           <button className="icon-button sound-toggle" onClick={toggleMute} aria-label={muted ? 'Unmute sound' : 'Mute sound'} title={muted ? 'Sound off' : 'Sound on'}>
@@ -286,7 +286,7 @@ function App() {
           <div className="date-stamp"><span>EST.</span><b>AFTER</b><b>BEDTIME</b><i>✧</i></div>
         </section>
 
-        <section className="desktop-workspace" aria-label="Dream OS applications">
+        <section className="desktop-workspace" id="dream-desktop" aria-label="Dream OS applications">
           <div className="workspace-heading">
             <div><span className="section-kicker">THE DREAM DESKTOP</span><h2>Where shall we wander?</h2></div>
             <span className="window-count"><span /> {dreamFiles.length.toString().padStart(2, '0')} little files</span>

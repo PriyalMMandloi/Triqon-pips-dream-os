@@ -57,7 +57,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 .brand-mark { display: grid; place-items: center; color: #fff8f1; background: var(--berry); border: 1px solid #87334f; border-radius: 5px 5px 5px 2px; box-shadow: inset 1px 1px #ffffff4a, 1px 1px #5c403324; width: 23px; height: 23px; font: 600 17px var(--serif); }
 .menu-divider { width: 1px; height: 17px; background: var(--line); }
 .menu-link, .icon-button { border: 0; background: transparent; padding: 5px; color: #806b5e; cursor: pointer; }
-.menu-link { font-size: 11px; }
+.menu-link { font-size: 11px; text-decoration: none; }
 .menu-link:hover, .site-footer button:hover { color: var(--berry); }
 .menu-actions { margin-left: auto; display: flex; align-items: center; gap: 14px; }
 .status-pill { font: 9px var(--mono); color: #927a6e; display: flex; align-items: center; gap: 7px; }
@@ -104,7 +104,7 @@ h1, h2, h3, p { margin-top: 0; }
 .date-stamp { position: absolute; top: 15px; right: 17px; display: flex; flex-direction: column; text-align: center; border: 1px solid #d5ad98; color: #9a7360; padding: 6px 8px; font: 8px var(--mono); line-height: 1.5; transform: rotate(8deg); }
 .date-stamp span { color: var(--berry); font-size: 7px; }.date-stamp i { font-style: normal; }
 
-.desktop-workspace { margin-top: 27px; padding: 0 5px; }
+.desktop-workspace { margin-top: 27px; padding: 0 5px; scroll-margin-top: 16px; }
 .workspace-heading { display: flex; align-items: end; justify-content: space-between; margin-bottom: 13px; }
 .section-kicker { font-size: 8px; letter-spacing: .15em; }
 .workspace-heading h2 { color: var(--brown); margin: 5px 0 0; font: 600 20px var(--serif); letter-spacing: -.03em; }
@@ -255,7 +255,7 @@ h1, h2, h3, p { margin-top: 0; }
   .side-note { display: none; }
 }
 @media (max-width: 700px) {
-  .menubar { padding: 0 4%; gap: 10px; height: 49px; }.menu-link, .menu-divider, .status-pill, .clock { display: none; }.menu-actions { gap: 8px; }
+  .menubar { padding: 0 4%; gap: 10px; height: 49px; }.menu-link:not(.desktop-link), .menu-divider, .status-pill, .clock { display: none; }.menu-actions { gap: 8px; }
   .desktop-layout { width: 92%; padding: 16px 0 78px; min-height: calc(100vh - 89px); }
   .welcome-panel { min-height: 290px; grid-template-columns: 1fr 43%; }
   .welcome-copy { padding: 31px 0 24px 21px; }.welcome-copy h1 { font-size: clamp(32px, 8vw, 44px); }.intro { max-width: 240px; font-size: 11px; }
