@@ -50,11 +50,11 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 
 .menubar {
   height: 52px; padding: 0 5.4%; display: flex; align-items: center; gap: 19px;
-  border-bottom: 1px solid rgba(155, 112, 91, .15); position: relative; z-index: 3;
+  border-bottom: 3px double rgba(155, 112, 91, .18); position: relative; z-index: 3;
   background: rgba(255, 250, 245, .8); backdrop-filter: blur(16px);
 }
 .brand { display: inline-flex; gap: 9px; align-items: center; color: var(--brown); text-decoration: none; font-size: 12px; font-weight: 700; letter-spacing: -.02em; }
-.brand-mark { display: grid; place-items: center; color: #fff8f1; background: var(--berry); border-radius: 8px 8px 8px 3px; width: 23px; height: 23px; font: 600 17px var(--serif); }
+.brand-mark { display: grid; place-items: center; color: #fff8f1; background: var(--berry); border: 1px solid #87334f; border-radius: 5px 5px 5px 2px; box-shadow: inset 1px 1px #ffffff4a, 1px 1px #5c403324; width: 23px; height: 23px; font: 600 17px var(--serif); }
 .menu-divider { width: 1px; height: 17px; background: var(--line); }
 .menu-link, .icon-button { border: 0; background: transparent; padding: 5px; color: #806b5e; cursor: pointer; }
 .menu-link { font-size: 11px; }
@@ -62,8 +62,8 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
 .menu-actions { margin-left: auto; display: flex; align-items: center; gap: 14px; }
 .status-pill { font: 9px var(--mono); color: #927a6e; display: flex; align-items: center; gap: 7px; }
 .status-dot, .window-count span { width: 6px; height: 6px; background: #8fb79b; border-radius: 50%; box-shadow: 0 0 0 3px #8fb79b25; }
-.icon-button { display: grid; place-items: center; width: 29px; height: 29px; border: 1px solid var(--line); border-radius: 9px; background: #fff9f4; color: var(--berry); }
-.theme-toggle { display: flex; gap: 6px; align-items: center; border: 1px solid #e9d9cd; background: #fffaf5; border-radius: 7px; padding: 6px 9px; cursor: pointer; font-size: 10px; color: var(--brown); }
+.icon-button { display: grid; place-items: center; width: 29px; height: 29px; border: 1px solid var(--line); border-radius: 5px; background: #fff9f4; box-shadow: inset 1px 1px #fff, 1px 1px #5c403312; color: var(--berry); }
+.theme-toggle { display: flex; gap: 6px; align-items: center; border: 1px solid #e9d9cd; background: #fffaf5; border-radius: 4px; box-shadow: inset 1px 1px #fff, 1px 1px #5c403312; padding: 6px 9px; cursor: pointer; font-size: 10px; color: var(--brown); }
 .theme-toggle svg { color: var(--berry); }
 .clock { display: flex; align-items: center; gap: 5px; color: #90776a; font: 10px var(--mono); }
 .clock svg { color: var(--berry); }
@@ -149,7 +149,7 @@ h1, h2, h3, p { margin-top: 0; }
 .bottom-flourish svg:first-child { transform: scaleX(-1); }
 
 .project-window { position: fixed; z-index: 10; top: 50%; left: 50%; width: min(510px, calc(100vw - 28px)); max-height: min(82vh, 720px); overflow: auto; transform: translate(-50%, -48%); border: 1px solid #d9c4b6; border-radius: 7px; background: #fffaf5; box-shadow: 0 24px 80px #50392738, 0 3px 10px #50392713; animation: window-in .23s cubic-bezier(.2,.75,.3,1); }
-.window-bar { min-height: 39px; display: flex; align-items: center; padding: 0 11px 0 14px; border-bottom: 1px solid #eddfd5; background: linear-gradient(90deg, #f3dfd2, #faeee6 56%, #f7e9df); }
+.window-bar { min-height: 39px; display: flex; align-items: center; padding: 0 11px 0 14px; border-bottom: 1px solid #eddfd5; background: linear-gradient(90deg, #f3dfd2, #faeee6 56%, #f7e9df); box-shadow: inset 0 1px #fff8f1; }
 .window-title { display: flex; align-items: center; gap: 7px; font-size: 11px; font-weight: 700; color: #765749; }
 .window-title svg { color: var(--berry); }
 .window-subtitle { margin-left: auto; color: #aa9284; font: 7px var(--mono); letter-spacing: .07em; }
@@ -248,7 +248,7 @@ h1, h2, h3, p { margin-top: 0; }
   .desktop-workspace { margin-top: 31px; }.side-note { right: -130px; }
 }
 @media (max-width: 1050px) {
-  .side-note { right: -5px; top: 392px; transform: rotate(3deg) scale(.86); transform-origin: top right; }
+  .side-note { display: none; }
   .desktop-layout { width: 88%; }.welcome-copy { padding-left: 32px; }.app-grid { gap: 8px; }
 }
 @media (max-width: 850px) {
