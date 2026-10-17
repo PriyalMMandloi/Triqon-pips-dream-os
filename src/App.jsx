@@ -253,7 +253,17 @@ function App() {
         <a className="brand" href="#home" aria-label="Pip's Dream OS home"><span className="brand-mark">p</span><span>Pip’s Dream OS</span></a>
         <span className="menu-divider" />
         <button className="menu-link" onClick={() => openWindow('story')}>About Pip</button>
-        <a className="menu-link desktop-link" href="#dream-desktop">Desktop</a>
+        <a
+          className="menu-link desktop-link"
+          href="#dream-desktop"
+          onClick={(event) => {
+            event.preventDefault();
+            window.history.pushState(null, '', '#dream-desktop');
+            document.getElementById("dream-desktop")?.scrollIntoView({ behavior: "smooth", block: "start" });
+          }}
+        >
+          Desktop
+        </a>
         <div className="menu-actions">
           <span className="status-pill"><span className="status-dot" /> Nursery is dreaming</span>
           <button className="icon-button sound-toggle" onClick={toggleMute} aria-label={muted ? 'Unmute sound' : 'Mute sound'} title={muted ? 'Sound off' : 'Sound on'}>
