@@ -1,6 +1,8 @@
 # Pip's Dream OS
 
-A responsive, fictional nursery desktop portfolio built with React, Vite, and CSS. Open the four desktop icons to explore Pip's Lullaby Lab, Nightlight Studio, Dream Delivery Map, and three-scene origin story.
+A responsive, fictional nursery desktop portfolio built with React, Vite, and CSS. Open the dream files to explore Pip's Lullaby Lab, Nightlight Studio, Dream Delivery Map, and interactive three-scene origin story.
+
+Drag desktop files to rearrange them; moving all four reveals a secret dream file. In Dream Delivery Map, choose a destination by tapping a map landmark or using the destination selector, then send Pip along the animated route. Select a story scene to change its narration, or play the story to cycle through the scenes.
 
 The official haX.baby Pip asset pack is in `public/assets/`. Its cloud avatar, lullaby box, dream lantern, and portrait are used in the hero and their corresponding project/story windows.
 

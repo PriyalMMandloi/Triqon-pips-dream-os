@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {
   ArrowDownRight, ArrowUpRight, Baby, ChevronDown, Cloud, CloudMoon, Heart,
-  Lightbulb, Map, Moon, Music2, PackageCheck, Play, Power, Send, Sparkles, Sun, Volume2,
+  Lightbulb, Map, Moon, Music2, PackageCheck, Pause, Play, Power, Send, Sparkles, Sun, Volume2,
   VolumeX, X,
 } from 'lucide-react';
 
@@ -24,7 +24,11 @@ const lullabies = [
   { name: 'Cloud nine', notes: [440, 554.37, 659.25, 880] },
 ];
 
-const destinations = ['The Moon Garden', 'Cloudberry Cove', 'The Pillow Fort'];
+const destinations = [
+  { name: 'The Moon Garden', x: 69, y: 33 },
+  { name: 'Cloudberry Cove', x: 48, y: 62 },
+  { name: 'The Pillow Fort', x: 82, y: 53 },
+];
 const lights = [
   { name: 'Moon glow', color: '#b7c6ff', mood: 'Moon-soft skies', icon: '☾' },
   { name: 'Berry blush', color: '#e69ab0', mood: 'A rosy little evening', icon: '✿' },
@@ -63,8 +67,16 @@ function App() {
   const [lightIndex, setLightIndex] = useState(0);
   const [destination, setDestination] = useState('');
   const [delivered, setDelivered] = useState(false);
+  const [draggedFiles, setDraggedFiles] = useState(() => new Set());
+  const [filePositions, setFilePositions] = useState({});
+  const [draggingFile, setDraggingFile] = useState('');
+  const [storyScene, setStoryScene] = useState(0);
+  const [storyPlaying, setStoryPlaying] = useState(false);
   const [secret, setSecret] = useState(false);
   const pipTaps = useRef(0);
+  const dragState = useRef(null);
+  const suppressClickUntil = useRef(0);
+  const desktopFilesRef = useRef(null);
   const audioRef = useRef(null);
   const timers = useRef([]);
 
@@ -75,11 +87,24 @@ function App() {
 
   useEffect(() => {
     const onKey = (event) => {
-      if (event.key === 'Escape') setActive('');
+      if (event.key === 'Escape') {
+        setActive('');
+        setStoryPlaying(false);
+      }
+      if (active === 'story' && (event.key === 'ArrowLeft' || event.key === 'ArrowRight')) {
+        event.preventDefault();
+        setStoryScene((current) => Math.max(0, Math.min(scenes.length - 1, current + (event.key === 'ArrowRight' ? 1 : -1))));
+      }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, []);
+  }, [active]);
+
+  useEffect(() => {
+    if (!storyPlaying || active !== 'story') return undefined;
+    const timer = window.setInterval(() => setStoryScene((current) => (current + 1) % scenes.length), 3200);
+    return () => window.clearInterval(timer);
+  }, [active, storyPlaying]);
 
   function playLullaby() {
     if (muted) {
@@ -125,6 +150,80 @@ function App() {
     setDelivered(true);
   }
 
+  function beginFileDrag(event, id) {
+    if (event.button !== 0) return;
+    const file = event.currentTarget;
+    const rect = file.getBoundingClientRect();
+    dragState.current = {
+      id,
+      pointerId: event.pointerId,
+      startX: event.clientX,
+      startY: event.clientY,
+      startPosition: filePositions[id] || { x: 0, y: 0 },
+      rect,
+      didMove: false,
+    };
+    file.setPointerCapture(event.pointerId);
+  }
+
+  function moveFile(event) {
+    const drag = dragState.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    const deltaX = event.clientX - drag.startX;
+    const deltaY = event.clientY - drag.startY;
+    if (!drag.didMove && Math.hypot(deltaX, deltaY) < 6) return;
+    drag.didMove = true;
+    const bounds = desktopFilesRef.current?.getBoundingClientRect();
+    if (!bounds) return;
+    const x = Math.max(
+      drag.startPosition.x + bounds.left - drag.rect.left,
+      Math.min(drag.startPosition.x + bounds.right - drag.rect.right, drag.startPosition.x + deltaX),
+    );
+    const y = Math.max(
+      drag.startPosition.y + bounds.top - drag.rect.top,
+      Math.min(drag.startPosition.y + bounds.bottom - drag.rect.bottom, drag.startPosition.y + deltaY),
+    );
+    setFilePositions((current) => ({ ...current, [drag.id]: { x, y } }));
+    setDraggingFile(drag.id);
+  }
+
+  function moveFileByKeyboard(event, id) {
+    const directions = {
+      ArrowLeft: [-12, 0],
+      ArrowRight: [12, 0],
+      ArrowUp: [0, -12],
+      ArrowDown: [0, 12],
+    };
+    const direction = directions[event.key];
+    if (!direction) return;
+    event.preventDefault();
+    const file = event.currentTarget;
+    const bounds = desktopFilesRef.current?.getBoundingClientRect();
+    if (!bounds) return;
+    const rect = file.getBoundingClientRect();
+    const current = filePositions[id] || { x: 0, y: 0 };
+    const x = Math.max(current.x + bounds.left - rect.left, Math.min(current.x + bounds.right - rect.right, current.x + direction[0]));
+    const y = Math.max(current.y + bounds.top - rect.top, Math.min(current.y + bounds.bottom - rect.bottom, current.y + direction[1]));
+    setFilePositions((positions) => ({ ...positions, [id]: { x, y } }));
+    setDraggedFiles((files) => new Set(files).add(id));
+  }
+
+  function finishFileDrag(event) {
+    const drag = dragState.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    if (drag.didMove) {
+      suppressClickUntil.current = Date.now() + 250;
+      setDraggedFiles((current) => new Set(current).add(drag.id));
+    }
+    dragState.current = null;
+    setDraggingFile('');
+  }
+
+  function cancelFileDrag() {
+    dragState.current = null;
+    setDraggingFile('');
+  }
+
   function tapPip() {
     pipTaps.current += 1;
     if (pipTaps.current >= 5) {
@@ -134,8 +233,18 @@ function App() {
   }
 
   function openWindow(id) {
+    setStoryPlaying(false);
     setActive((current) => current === id ? '' : id);
   }
+
+  function closeWindow() {
+    setActive('');
+    setStoryPlaying(false);
+  }
+
+  const dreamFiles = draggedFiles.size === projects.length
+    ? [...projects, { id: 'secret', name: 'SECRET.DRM', kind: 'found in the stars', icon: Sparkles, color: 'gold' }]
+    : projects;
 
   return (
     <main className={`desktop ${night ? 'is-night' : ''} ${lights[lightIndex].name === 'Moon glow' ? 'moon-glow' : ''}`} style={{ '--mood-glow': lights[lightIndex].color }}>
@@ -144,7 +253,7 @@ function App() {
         <a className="brand" href="#home" aria-label="Pip's Dream OS home"><span className="brand-mark">p</span><span>Pip’s Dream OS</span></a>
         <span className="menu-divider" />
         <button className="menu-link" onClick={() => openWindow('story')}>About Pip</button>
-        <button className="menu-link" onClick={() => setActive('')}>Desktop</button>
+        <button className="menu-link" onClick={closeWindow}>Desktop</button>
         <div className="menu-actions">
           <span className="status-pill"><span className="status-dot" /> Nursery is dreaming</span>
           <button className="icon-button sound-toggle" onClick={toggleMute} aria-label={muted ? 'Unmute sound' : 'Mute sound'} title={muted ? 'Sound off' : 'Sound on'}>
@@ -180,11 +289,25 @@ function App() {
         <section className="desktop-workspace" aria-label="Dream OS applications">
           <div className="workspace-heading">
             <div><span className="section-kicker">THE DREAM DESKTOP</span><h2>Where shall we wander?</h2></div>
-            <span className="window-count"><span /> 04 little windows</span>
+            <span className="window-count"><span /> {dreamFiles.length.toString().padStart(2, '0')} little files</span>
           </div>
-          <div className="app-grid">
-            {projects.map(({ id, name, kind, icon: Icon, color }, index) => (
-              <button className={`app-icon ${active === id ? 'selected' : ''}`} key={id} onClick={() => openWindow(id)} aria-label={`Open ${name}`}>
+          <div className="app-grid" ref={desktopFilesRef} onPointerMove={moveFile} onPointerUp={finishFileDrag} onPointerCancel={cancelFileDrag} aria-label="Draggable dream files">
+            {dreamFiles.map(({ id, name, kind, icon: Icon, color }, index) => (
+              <button
+                className={`app-icon ${active === id ? 'selected' : ''} ${draggingFile === id ? 'is-dragging' : ''} ${id === 'secret' ? 'secret-file' : ''}`}
+                key={id}
+                style={{ '--drag-x': `${filePositions[id]?.x || 0}px`, '--drag-y': `${filePositions[id]?.y || 0}px` }}
+                onPointerDown={(event) => beginFileDrag(event, id)}
+                onKeyDown={(event) => moveFileByKeyboard(event, id)}
+                onClick={(event) => {
+                  if (event.detail !== 0 && Date.now() < suppressClickUntil.current) return;
+                  openWindow(id);
+                }}
+                aria-label={`Open ${name}`}
+                aria-grabbed={draggingFile === id}
+                title="Drag or use arrow keys to rearrange · click to open"
+                aria-keyshortcuts="ArrowUp ArrowDown ArrowLeft ArrowRight"
+              >
                 <span className={`app-illustration ${color}`}>
                   <Icon size={25} strokeWidth={1.6} />
                   {id === 'lullaby' && <span className="icon-twinkle">✦</span>}
@@ -199,7 +322,7 @@ function App() {
             ))}
           </div>
           <div className="workspace-bottom">
-            <div className="tiny-tip"><Sparkles size={14} /> <span>Tip: try the moon switch. Every dream has two sides.</span></div>
+            <div className="tiny-tip"><Sparkles size={14} /> <span>Dream-file secret: give every icon a little wander.</span></div>
             <span className="desk-version">PIP OS <b>v.01</b></span>
           </div>
         </section>
@@ -220,7 +343,7 @@ function App() {
               </button>
             ))}
             <span className="dock-separator" />
-            <button className="dock-item power-item" onClick={() => { setActive(''); setNight(false); }} aria-label="Return to dreamy desktop" title="Desktop"><Power size={18} /></button>
+            <button className="dock-item power-item" onClick={() => { closeWindow(); setNight(false); }} aria-label="Return to dreamy desktop" title="Desktop"><Power size={18} /></button>
           </div>
           <div className="dock-caption">your little dream tools</div>
         </div>
@@ -233,7 +356,7 @@ function App() {
       </footer>
 
       {active === 'lullaby' && (
-        <WindowFrame title="Lullaby Lab" subtitle="SOUND STUDIO  /  001" icon={Music2} onClose={() => setActive('')} className="project-window lullaby-window">
+        <WindowFrame title="Lullaby Lab" subtitle="SOUND STUDIO  /  001" icon={Music2} onClose={closeWindow} className="project-window lullaby-window">
           <div className="window-content">
             <div className="project-eyebrow">A music box for your imagination</div>
             <h2>Pick a little tune.</h2>
@@ -252,7 +375,7 @@ function App() {
       )}
 
       {active === 'nightlight' && (
-        <WindowFrame title="Nightlight Studio" subtitle="MOOD MAKER  /  002" icon={Lightbulb} onClose={() => setActive('')} className="project-window">
+        <WindowFrame title="Nightlight Studio" subtitle="MOOD MAKER  /  002" icon={Lightbulb} onClose={closeWindow} className="project-window">
           <div className="window-content">
             <div className="project-eyebrow">Set the scene before sleep</div>
             <h2>What color is tonight?</h2>
@@ -267,22 +390,41 @@ function App() {
       )}
 
       {active === 'delivery' && (
-        <WindowFrame title="Dream Delivery Map" subtitle="FIELD NOTES  /  003" icon={Map} onClose={() => setActive('')} className="project-window delivery-window">
+        <WindowFrame title="Dream Delivery Map" subtitle="FIELD NOTES  /  003" icon={Map} onClose={closeWindow} className="project-window delivery-window">
           <div className="window-content">
             <div className="project-eyebrow">One dream, packed with care</div>
             <h2>Where should Pip fly?</h2>
             <p>Pick a faraway sleepy place. Pip will send a little goodnight dream your way.</p>
-            <div className={`delivery-map ${delivered ? 'has-delivered' : ''}`}>
+            <div className={`delivery-map ${delivered ? 'has-delivered' : ''}`} role="group" aria-label="Choose Pip's dream delivery destination on the map">
               <span className="map-cloud cloud-left">☁</span><span className="map-cloud cloud-right">☁</span>
               <span className="map-moon">☾</span>
-              <span className="map-path" />
-              <span className="map-house">⌂</span>
-              <span className="map-plane">{delivered ? '✦' : '✈'}</span>
+              <svg className="route-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+                <path d={(() => {
+                  const selected = destinations.find((place) => place.name === destination);
+                  if (!selected) return 'M 16 76 Q 39 30 69 33';
+                  return `M 16 76 Q ${(16 + selected.x) / 2 + 8} ${(76 + selected.y) / 2 - 20} ${selected.x} ${selected.y}`;
+                })()} />
+              </svg>
+              <span className="map-house" aria-hidden="true">⌂</span>
+              {destinations.map((place, index) => (
+                <button
+                  className={`map-destination ${destination === place.name ? 'destination-selected' : ''}`}
+                  key={place.name}
+                  style={{ left: `${place.x}%`, top: `${place.y}%` }}
+                  onClick={() => { setDestination(place.name); setDelivered(false); }}
+                  aria-label={`Choose ${place.name} on the map`}
+                  aria-pressed={destination === place.name}
+                >
+                  <span>{['✿', '☁', '⌂'][index]}</span>
+                  <small>{place.name}</small>
+                </button>
+              ))}
+              <span className={`map-plane ${delivered ? 'plane-delivered' : ''}`} style={delivered ? { left: `${destinations.find((place) => place.name === destination)?.x || 16}%`, top: `${destinations.find((place) => place.name === destination)?.y || 76}%` } : undefined}>{delivered ? '✦' : '✈'}</span>
               <span className="map-place">THE DREAM SKY</span>
             </div>
             <label className="destination-label" htmlFor="dream-destination">Choose a destination</label>
             <div className="destination-row">
-              <div className="select-wrap"><select id="dream-destination" value={destination} onChange={(event) => { setDestination(event.target.value); setDelivered(false); }}><option value="">Pick a sleepy place…</option>{destinations.map((place) => <option key={place} value={place}>{place}</option>)}</select><ChevronDown size={15} /></div>
+              <div className="select-wrap"><select id="dream-destination" value={destination} onChange={(event) => { setDestination(event.target.value); setDelivered(false); }}><option value="">Pick a sleepy place…</option>{destinations.map((place) => <option key={place.name} value={place.name}>{place.name}</option>)}</select><ChevronDown size={15} /></div>
               <button className="send-button" onClick={sendDream} disabled={!destination}><Send size={14} /> Send</button>
             </div>
             {delivered && <p className="delivery-confirm" role="status"><PackageCheck size={16} /> Dream dispatched to {destination}. Sweet travels!</p>}
@@ -291,7 +433,7 @@ function App() {
       )}
 
       {active === 'story' && (
-        <WindowFrame title="Pip’s origin story" subtitle="THE BEGINNING  /  000" icon={Baby} onClose={() => setActive('')} className="project-window story-window">
+        <WindowFrame title="Pip’s origin story" subtitle="THE BEGINNING  /  000" icon={Baby} onClose={closeWindow} className="project-window story-window">
           <div className="window-content">
             <div className="project-eyebrow">A story in three sleepy scenes</div>
             <h2>Before the first goodnight.</h2>
@@ -299,13 +441,33 @@ function App() {
               <p>Pip is a curious little dream maker, always ready with a soft light and a goodnight wish.</p>
               <img src="/assets/pip_portrait.png" alt="Official portrait of Pip in a starry nightcap and pink bow" loading="lazy" />
             </div>
-            <div className="story-scenes">
-              {scenes.map(({ number, title, text, icon: Icon, sky }) => <article className="story-scene" key={number}>
-                <div className={`scene-art ${sky}`}><Icon size={25} strokeWidth={1.5} /><span className="scene-doodle">{number === '02' ? '♡' : '✦'}</span></div>
-                <span className="scene-number">SCENE {number}</span><h3>{title}</h3><p>{text}</p>
-              </article>)}
+            <div className="story-scenes" role="group" aria-label="Choose a story scene">
+              {scenes.map(({ number, title, icon: Icon, sky }, index) => <button type="button" aria-pressed={storyScene === index} className={`story-scene ${storyScene === index ? 'scene-selected' : ''}`} key={number} onClick={() => { setStoryScene(index); setStoryPlaying(false); }}>
+                <span className={`scene-art ${sky}`}><Icon size={25} strokeWidth={1.5} /><span className="scene-doodle">{number === '02' ? '♡' : '✦'}</span></span>
+                <span className="scene-number">SCENE {number}</span><span className="scene-title">{title}</span>
+              </button>)}
+            </div>
+            <div className="story-narration" aria-live="polite" key={storyScene}>
+              <span className="story-narration-number">SCENE {scenes[storyScene].number}</span>
+              <h3>{scenes[storyScene].title}</h3>
+              <p>{scenes[storyScene].text}</p>
+              <button type="button" className="story-play" onClick={() => setStoryPlaying((current) => !current)}>{storyPlaying ? <Pause size={13} /> : <Play size={13} />} {storyPlaying ? 'Pause story' : 'Play story'}</button>
             </div>
             <div className="story-signoff">And that’s how the dream desk got its very first dreamer. <span>— Pip ✧</span></div>
+          </div>
+        </WindowFrame>
+      )}
+
+      {active === 'secret' && (
+        <WindowFrame title="A hidden dream" subtitle="FOUND IN THE STARS  /  ✦" icon={Sparkles} onClose={closeWindow} className="project-window secret-window">
+          <div className="window-content">
+            <div className="project-eyebrow">A little constellation, just for you</div>
+            <h2>You found Pip’s secret dream!</h2>
+            <div className="secret-reward">
+              <img src="/assets/pip_portrait.png" alt="Pip smiling beneath a crescent moon" />
+              <p>Somewhere between the moon garden and the pillow fort, Pip saved one last dream: a sky where every curious click becomes a tiny star.</p>
+            </div>
+            <button type="button" className="primary-button" onClick={() => setActive('')}>Keep exploring <Sparkles size={14} /></button>
           </div>
         </WindowFrame>
       )}
