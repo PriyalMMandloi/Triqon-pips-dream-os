@@ -60,6 +60,7 @@ function WindowFrame({ title, subtitle, icon: Icon, onClose, children, className
 
 function App() {
   const [active, setActive] = useState('');
+  const [desktopScrollEnabled, setDesktopScrollEnabled] = useState(() => window.location.hash === '#dream-desktop');
   const [night, setNight] = useState(false);
   const [muted, setMuted] = useState(true);
   const [tune, setTune] = useState(0);
@@ -247,7 +248,7 @@ function App() {
     : projects;
 
   return (
-    <main className={`desktop ${night ? 'is-night' : ''} ${lights[lightIndex].name === 'Moon glow' ? 'moon-glow' : ''}`} style={{ '--mood-glow': lights[lightIndex].color }}>
+    <main className={`desktop ${night ? 'is-night' : ''} ${lights[lightIndex].name === 'Moon glow' ? 'moon-glow' : ''} ${desktopScrollEnabled ? 'desktop-scroll-enabled' : ''}`} style={{ '--mood-glow': lights[lightIndex].color }}>
       <div className="ambient-orb orb-one" /><div className="ambient-orb orb-two" />
       <header className="menubar">
         <a className="brand" href="#home" aria-label="Pip's Dream OS home"><span className="brand-mark">p</span><span>Pip’s Dream OS</span></a>
@@ -259,7 +260,10 @@ function App() {
           onClick={(event) => {
             event.preventDefault();
             window.history.pushState(null, '', '#dream-desktop');
-            document.getElementById("dream-desktop")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            setDesktopScrollEnabled(true);
+            requestAnimationFrame(() => {
+              document.getElementById("dream-desktop")?.scrollIntoView({ behavior: "smooth", block: "start" });
+            });
           }}
         >
           Desktop

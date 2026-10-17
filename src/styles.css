@@ -37,6 +37,7 @@ button:focus-visible, a:focus-visible, select:focus-visible { outline: 3px solid
     #fff8f1;
   transition: background .7s ease, color .5s ease;
 }
+.desktop.desktop-scroll-enabled::after { content: ''; display: block; height: 100vh; }
 .desktop::before {
   position: absolute; inset: 0; z-index: -1; content: '';
   opacity: .29; pointer-events: none;
