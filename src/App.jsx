@@ -37,8 +37,31 @@ const lights = [
 ];
 
 function PipPortrait({ secret, onTap }) {
+  const portraitRef = useRef(null);
+  const animationFrameRef = useRef(0);
+
+  useEffect(() => () => {
+    window.cancelAnimationFrame(animationFrameRef.current);
+  }, []);
+
+  function followPointer(event) {
+    if (event.pointerType !== 'mouse' || window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+
+    const bounds = event.currentTarget.getBoundingClientRect();
+    const tilt = Math.max(-3, Math.min(3, ((event.clientX - bounds.left) / bounds.width - 0.5) * 6));
+    window.cancelAnimationFrame(animationFrameRef.current);
+    animationFrameRef.current = window.requestAnimationFrame(() => {
+      portraitRef.current?.style.setProperty('--pip-tilt', `${tilt.toFixed(2)}deg`);
+    });
+  }
+
+  function resetTilt() {
+    window.cancelAnimationFrame(animationFrameRef.current);
+    portraitRef.current?.style.setProperty('--pip-tilt', '0deg');
+  }
+
   return (
-    <button className={`pip-portrait ${secret ? 'pip-secret' : ''}`} onClick={onTap} aria-label="Pip, a friendly skull baby wearing a starry nightcap and pink bow" title="Pip says hello">
+    <button ref={portraitRef} className={`pip-portrait ${secret ? 'pip-secret' : ''}`} onClick={onTap} onPointerMove={followPointer} onPointerLeave={resetTilt} aria-label="Pip, a friendly skull baby wearing a starry nightcap and pink bow" title="Pip says hello">
       <img src="/assets/pip_avatar_cloud.png" alt="" />
       {secret && <span className="secret-star">you found my lucky star!</span>}
     </button>
