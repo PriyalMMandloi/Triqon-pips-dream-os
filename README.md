@@ -1,23 +1,72 @@
-# Pip's Dream OS
+# Pip’s Dream OS
 
-A responsive, fictional nursery desktop portfolio built with React, Vite, and CSS. Open the dream files to explore Pip's Lullaby Lab, Nightlight Studio, Dream Delivery Map, and interactive three-scene origin story.
+Pip’s Dream OS is a character-focused, retro-inspired interactive portfolio for Pip, the Junior Dream Engineer. Explore Pip’s nursery desktop and discover projects and stories from a playful dream world.
 
-Drag desktop files to rearrange them; moving all four reveals a secret dream file. In Dream Delivery Map, choose a destination by tapping a map landmark or using the destination selector, then send Pip along the animated route. Select a story scene to change its narration, or play the story to cycle through the scenes.
+## Live Demo
 
-The official haX.baby Pip asset pack is in `public/assets/`. Its cloud avatar, lullaby box, dream lantern, and portrait are used in the hero and their corresponding project/story windows.
+[https://triqon-pips-dream-os.vercel.app/](https://triqon-pips-dream-os.vercel.app/)
 
-## Run locally
+## Features
 
-```sh
+- An interactive dream desktop with four draggable project files, including Pip’s Lullaby Lab, Nightlight Studio, and Dream Delivery Map.
+- A hidden dream file revealed by moving all four desktop files.
+- A three-scene interactive origin story.
+- Dream Delivery Map: choose a destination by tapping a map landmark or using the destination selector, then send Pip along an animated route.
+- Day/night mode and sound controls.
+- Responsive layout for mobile screens.
+
+## Tech Stack
+
+- React
+- Vite
+- JavaScript
+- CSS
+- Web Audio API
+- Lucide React
+- Google Fonts
+
+## Getting Started
+
+Install the dependencies and start the development server:
+
+```bash
 npm install
 npm run dev
 ```
 
-## Checks
+## Quality Checks
 
-```sh
+```bash
 npm run lint
 npm run build
 ```
 
-Sound is generated in the browser with the Web Audio API and starts only after the visitor unmutes and presses play. Pip artwork comes from the official haX.baby asset pack. Google Fonts (DM Sans, DM Mono, Fraunces) are loaded from the Google Fonts CSS endpoint; if unavailable, the site uses local system fallbacks. Lucide React supplies the interface icons.
+## Team
+
+Triqon
+
+## Credits
+
+- Official haX.baby Pip asset pack
+- Lucide React
+- Google Fonts
+- Web Audio API
+- AI coding assistance
+
+## Story Behind the Build
+
+Pip’s character and dream world inspired us to make more than a conventional portfolio. We turned them into an interactive desktop so visitors can explore Pip’s projects and story in a playful, character-led way.
+
+## Screenshots
+
+### Homepage
+
+![Pip’s Dream OS homepage](public/screenshots/homepage.png)
+
+### Dream Desktop
+
+![Pip’s Dream OS dream desktop](public/screenshots/dream-desktop.png)
+
+### Easter Egg
+
+![Pip’s Dream OS Easter egg](public/screenshots/easter-egg.png)
